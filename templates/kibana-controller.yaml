@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kibana-logging-{{ template "fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    k8s-app: kibana-logging-{{ template "fullname" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: kibana-logging-{{ template "fullname" . }}
+  template:
+    metadata:
+      labels:
+        k8s-app: kibana-logging-{{ template "fullname" . }}
+    spec:
+      containers:
+      - name: kibana-logging-{{ template "fullname" . }}
+        image: {{ .Values.kibana.image }}
+        imagePullPolicy: {{ .Values.kibana.pullPolicy }}
+        resources:
+          # keep request = limit to keep this container in guaranteed class
+          limits:
+            cpu: 100m
+          requests:
+            cpu: 100m
+        env:
+          - name: "ELASTICSEARCH_URL"
+            value: "http://elasticsearch-logging:9200"
+        ports:
+        - containerPort: 5601
+          name: ui
+          protocol: TCP
+        volumeMounts:
+        - name: kibana-config
+          mountPath: /etc/kibana
+          readOnly: true
+      volumes:
+      - name: kibana-config
+        configMap:
+          name: kibana-config-{{ template "fullname" . }}
