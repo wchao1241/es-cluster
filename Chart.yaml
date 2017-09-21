@@ -1,8 +1,0 @@
-description: efk cluster
-engine: gotpl
-icon: https://bitnami.com/assets/stacks/rabbitmq/img/rabbitmq-stack-220x234.png
-maintainers:
-- email: tianh@neunn.com
-  name: Tianh
-name: efk-cluster
-version: 1.0.0

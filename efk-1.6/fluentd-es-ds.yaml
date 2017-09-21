@@ -1,22 +1,23 @@
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: fluentd-es-{{ template "fullname" . }}
-  namespace: {{ .Values.namespace }}
+  name: fluentd-es-v1.22
+  namespace: efk-logs
   labels:
-    k8s-app: fluentd-es-{{ template "fullname" . }}
+    k8s-app: fluentd-es
     version: v1.22
 spec:
   template:
     metadata:
       labels:
-        k8s-app: fluentd-es-{{ template "fullname" . }}
+        k8s-app: fluentd-es
         version: v1.22
     spec:
-      serviceAccountName: fluentd-{{ template "fullname" . }}
+      serviceAccountName: fluentd
+      # hostNetwork: true
       containers:
-      - name: fluentd-es-{{ template "fullname" . }}
-        image: {{ .Values.fluentd.image }}
+      - name: fluentd-es
+        image: tianctrl/k8s-fluentd-image
         command:
           - '/bin/sh'
           - '-c'
@@ -30,6 +31,10 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
+        ports:
+        - containerPort: 5140
+          name: log
+          protocol: UDP
         volumeMounts:
         - name: varlog
           mountPath: /var/log

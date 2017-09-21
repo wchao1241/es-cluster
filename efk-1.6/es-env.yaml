@@ -1,7 +1,7 @@
 apiVersion: v1
 metadata:
-  name: es-env-{{ template "fullname" . }}
-  namespace: {{ .Values.namespace }}
+  name: es-env
+  namespace: efk-logs
 kind: ConfigMap
 data:
   es-cluster-name: es-logs

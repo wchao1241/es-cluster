@@ -1,42 +1,52 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: es-master-{{ template "fullname" . }}
-  namespace: {{ .Values.namespace }}
+  name: es-client
+  namespace: efk-logs
   labels:
-    k8s-app: elasticsearch-logging-{{ template "fullname" . }}
+    k8s-app: elasticsearch-logging
     version: v1
-    role: master
-    master: 'true'
+    role: client
 spec:
-  replicas: {{ .Values.esMaster.replicas }}
+  replicas: 2
   template:
     metadata:
       labels:
-        k8s-app: elasticsearch-logging-{{ template "fullname" . }}
+        k8s-app: elasticsearch-logging
         version: v1
-        role: master
-        master: 'true'
+        role: client
     spec:
-      serviceAccountName: es-master-{{ template "fullname" . }}
+      serviceAccountName: es-client
       containers:
-      - name: es-master-{{ template "fullname" . }}
+      - name: es-client
         securityContext:
           privileged: true
           capabilities:
             add:
               - IPC_LOCK
-        image: {{ .Values.esImage.name }}
+        image: kayrus/docker-elasticsearch-kubernetes:2.4.4
         args:
         - /run.sh
         - -Des.path.conf=/etc/elasticsearch
         readinessProbe:
-          tcpSocket:
-            port: 9300
+          httpGet:
+            path: /
+            port: 9200
+            scheme: HTTP
           timeoutSeconds: 1
           successThreshold: 3
-        imagePullPolicy: {{ .Values.esImage.pullPolicy }}
+        livenessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+            scheme: HTTP
+          initialDelaySeconds: 360
+          timeoutSeconds: 2
+        imagePullPolicy: Always
         ports:
+        - containerPort: 9200
+          name: http
+          protocol: TCP
         - containerPort: 9300
           name: transport
           protocol: TCP
@@ -51,31 +61,25 @@ spec:
         - name: CLUSTER_NAME
           valueFrom:
             configMapKeyRef:
-              name: es-env-{{ template "fullname" . }}
+              name: es-env
               key: es-cluster-name
-        - name: NUMBER_OF_REPLICAS
-          valueFrom:
-            configMapKeyRef:
-              name: es-env-{{ template "fullname" . }}
-              key: es-number-of-replicas
         - name: NODE_MASTER
-          value: 'true'
+          value: 'false'
         - name: NODE_DATA
           value: 'false'
         - name: HTTP_ENABLE
-          value: 'false'
+          value: 'true'
         - name: ES_HEAP_SIZE
           valueFrom:
             configMapKeyRef:
-              name: es-env-{{ template "fullname" . }}
-              key: es-master-heap
+              name: es-env
+              key: es-client-heap
         - name: ES_CLIENT_ENDPOINT
           valueFrom:
             configMapKeyRef:
-              name: es-env-{{ template "fullname" . }}
+              name: es-env
               key: es-client-endpoint
-      terminationGracePeriodSeconds: 31557600
       volumes:
       - name: es-config
         configMap:
-          name: es-config-{{ template "fullname" . }}
+          name: es-config

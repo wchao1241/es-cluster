@@ -1,19 +1,19 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: fluentd-{{ template "fullname" . }}
-  namespace: {{ .Values.namespace }}
+  name: fluentd
+  namespace: efk-logs
 
 ---
 
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1alpha1
 metadata:
-  name: fluentd-{{ template "fullname" . }}
+  name: fluentd
 subjects:
   - kind: ServiceAccount
-    name: fluentd-{{ template "fullname" . }}
-    namespace: {{ .Values.namespace }}
+    name: fluentd
+    namespace: efk-logs
 roleRef:
   kind: ClusterRole
   name: view
