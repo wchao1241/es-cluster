@@ -1,30 +1,29 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: es-data
-  namespace: efk-logs
+  name: es-data-{{ template "fullname" . }}
   labels:
-    k8s-app: elasticsearch-logging
+    k8s-app: elasticsearch-logging-{{ template "fullname" . }}
     version: v1
     role: data
 spec:
-  replicas: 2
+  replicas: {{ .Values.esData.replicas }}
   template:
     metadata:
       labels:
-        k8s-app: elasticsearch-logging
+        k8s-app: elasticsearch-logging-{{ template "fullname" . }}
         version: v1
         role: data
     spec:
-      serviceAccountName: es-data
+      serviceAccountName: es-data-{{ template "fullname" . }}
       containers:
-      - name: es-data
+      - name: es-data-{{ template "fullname" . }}
         securityContext:
           privileged: true
           capabilities:
             add:
               - IPC_LOCK
-        image: kayrus/docker-elasticsearch-kubernetes:2.4.4
+        image: {{ .Values.esImage.name }}
         args:
         - /run.sh
         - -Des.path.conf=/etc/elasticsearch
@@ -33,7 +32,7 @@ spec:
             port: 9300
           timeoutSeconds: 1
           successThreshold: 3
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.esImage.pullPolicy }}
         ports:
         - containerPort: 9300
           name: transport
@@ -56,12 +55,12 @@ spec:
         - name: CLUSTER_NAME
           valueFrom:
             configMapKeyRef:
-              name: es-env
+              name: es-env-{{ template "fullname" . }}
               key: es-cluster-name
         - name: NUMBER_OF_REPLICAS
           valueFrom:
             configMapKeyRef:
-              name: es-env
+              name: es-env-{{ template "fullname" . }}
               key: es-number-of-replicas
         - name: NODE_MASTER
           value: 'false'
@@ -72,17 +71,17 @@ spec:
         - name: ES_HEAP_SIZE
           valueFrom:
             configMapKeyRef:
-              name: es-env
+              name: es-env-{{ template "fullname" . }}
               key: es-data-heap
         - name: ES_CLIENT_ENDPOINT
           valueFrom:
             configMapKeyRef:
-              name: es-env
+              name: es-env-{{ template "fullname" . }}
               key: es-client-endpoint
         - name: ES_PERSISTENT
           valueFrom:
             configMapKeyRef:
-              name: es-env
+              name: es-env-{{ template "fullname" . }}
               key: es-persistent-storage
       terminationGracePeriodSeconds: 31557600
       volumes:
@@ -90,4 +89,4 @@ spec:
         emptyDir: {}
       - name: es-config
         configMap:
-          name: es-config
+          name: es-config-{{ template "fullname" . }}

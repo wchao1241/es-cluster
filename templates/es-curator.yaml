@@ -2,7 +2,6 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: es-curator
-  namespace: efk-logs
   labels:
     k8s-app: es-curator
 spec:
