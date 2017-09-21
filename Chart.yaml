@@ -1,8 +1,0 @@
-description: Elasticsearch cluster
-engine: gotpl
-icon: http://orvjyath1.bkt.clouddn.com/es.png
-maintainers:
-- email: tianh@neunn.com
-  name: Tianh
-name: elasticsearch-cluster
-version: 2.4.1
